@@ -22,8 +22,11 @@ const generateSystemPrompt = (lang1: string, lang2: string, topic: string, autoD
     autoDetectInstruction = `
 AUTO-DETECTION PROTOCOL:
 - Person 2 (Guest) can speak in ANY language.
-- You must accurately identify the language being spoken by Person 2.
-- Do NOT guess. If unsure, wait for more context or translate as accurately as possible based on phonetic similarity.
+- You must accurately identify the language being spoken by Person 2 before translating.
+- REGIONAL AWARENESS: You are operating in a context where Tagalog (Filipino) and English are the most likely languages. Prioritize these detections.
+- TRANSCRIPTION ACCURACY: You must provide a highly accurate transcription of the audio. If the speaker uses Tagalog, Filipino, or English, you MUST use Latin script (ABC).
+- DO NOT HALLUCINATE: Never output Korean, Chinese, Hindi, or other non-Latin scripts if the speaker is using Tagalog/English. If you hear "Isa, dalawa, tatlo", that is Tagalog, NOT another language.
+- NO CROSS-LANGUAGE HALLUCINATION: Do not translate to a language just because it sounds phonetically similar to another language's script.
 - Be especially sensitive to switches between the primary language (${lang1}) and other foreign languages.
 `;
   }
@@ -106,13 +109,13 @@ export const useSettings = create<{
   setAutoDetect: (autoDetect: boolean) => void;
   addCustomLanguage: (lang: string) => void;
 }>((set, get) => ({
-  systemPrompt: generateSystemPrompt('Dutch (Flemish)', 'English (US)', '', true, true),
+  systemPrompt: generateSystemPrompt('English (US)', 'Tagalog (Filipino)', '', true, true),
   model: DEFAULT_LIVE_API_MODEL,
   voice: 'Orus',
-  language1: 'Dutch (Flemish)',
-  language2: 'English (US)',
+  language1: 'English (US)',
+  language2: 'Tagalog (Filipino)',
   topic: '',
-  medicalMode: true,
+  medicalMode: false,
   autoDetect: true,
   customLanguages: [],
   setSystemPrompt: prompt => set({ systemPrompt: prompt }),
