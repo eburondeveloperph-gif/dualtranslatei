@@ -110,11 +110,11 @@ export const useSettings = create<{
   setAutoDetect: (autoDetect: boolean) => void;
   addCustomLanguage: (lang: string) => void;
 }>((set, get) => ({
-  systemPrompt: generateSystemPrompt('English (US)', 'Tagalog (Filipino)', 'Medical Consultation', true, true),
+  systemPrompt: generateSystemPrompt('Dutch (Flemish)', 'English (US)', 'Medical Consultation', true, true),
   model: DEFAULT_LIVE_API_MODEL,
   voice: 'Orus',
-  language1: 'English (US)',
-  language2: 'Tagalog (Filipino)',
+  language1: 'Dutch (Flemish)',
+  language2: 'English (US)',
   topic: 'Medical Consultation',
   medicalMode: true,
   autoDetect: true,
