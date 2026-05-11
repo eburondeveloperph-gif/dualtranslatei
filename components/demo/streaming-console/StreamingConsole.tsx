@@ -31,11 +31,40 @@ export default function StreamingConsole() {
 
   // Set the configuration for the Live API
   useEffect(() => {
+    const getLanguageCode = (lang: string) => {
+      const map: Record<string, string> = {
+        'English (US)': 'en-US',
+        'English (UK)': 'en-GB',
+        'Tagalog (Filipino)': 'fil-PH',
+        'Dutch': 'nl-NL',
+        'Dutch (Flemish)': 'nl-BE',
+        'Chinese (Simplified)': 'zh-CN',
+        'Chinese (Traditional)': 'zh-TW',
+        'Japanese': 'ja-JP',
+        'Korean': 'ko-KR',
+        'Spanish': 'es-ES',
+        'French': 'fr-FR',
+        'German': 'de-DE',
+        'Italian': 'it-IT',
+        'Portuguese (Brazil)': 'pt-BR',
+        'Arabic': 'ar-SA',
+        'Hindi': 'hi-IN',
+        'Vietnamese': 'vi-VN',
+        'Thai': 'th-TH',
+        'Indonesian': 'id-ID',
+      };
+      return map[lang] || undefined;
+    };
+
+    const langCodes = [getLanguageCode(language1), getLanguageCode(language2)].filter(Boolean) as string[];
+
     // Using `any` for config to accommodate `speechConfig`, which is not in the
     // current TS definitions but is used in the working reference example.
     const config: any = {
       responseModalities: [Modality.AUDIO],
-      inputAudioTranscription: {},
+      inputAudioTranscription: {
+        languageCodes: langCodes.length > 0 ? langCodes : ['en-US', 'fil-PH'],
+      },
       outputAudioTranscription: {},
       speechConfig: {
         voiceConfig: {

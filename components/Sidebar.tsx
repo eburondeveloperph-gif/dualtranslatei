@@ -42,20 +42,22 @@ export default function Sidebar() {
     doc.text('Powered by Eburon AI', 14, 36);
     
     const tableData = history.map(item => [
+      new Date(item.timestamp).toLocaleString(),
       item.sourceText,
       item.translatedText
     ]);
 
     autoTable(doc, {
       startY: 40,
-      head: [['Source Text', 'Translated Text']],
+      head: [['Time', 'Source Text', 'Translation']],
       body: tableData,
       theme: 'striped',
-      headStyles: { fillColor: [68, 141, 255] }, // Match --accent-blue-headers roughly
-      styles: { fontSize: 10, cellPadding: 5 },
+      headStyles: { fillColor: [68, 141, 255] },
+      styles: { fontSize: 9, cellPadding: 3 },
       columnStyles: {
-        0: { cellWidth: 90 },
-        1: { cellWidth: 90 }
+        0: { cellWidth: 35 },
+        1: { cellWidth: 70 },
+        2: { cellWidth: 75 }
       }
     });
 
@@ -183,6 +185,14 @@ export default function Sidebar() {
             {history.length > 0 ? (
               history.map(item => (
                 <div key={item.id} className="history-item">
+                  <div className="history-item-header">
+                    <span className="history-item-time">
+                      {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                    <span className="history-item-langs">
+                      {item.lang1} → {item.lang2}
+                    </span>
+                  </div>
                   <div className="history-item-source">
                     <strong>Source:</strong> {item.sourceText}
                   </div>

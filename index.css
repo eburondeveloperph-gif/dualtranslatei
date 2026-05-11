@@ -1360,14 +1360,38 @@ form button:first-of-type {
   gap: 8px;
 }
 
-.history-item strong {
-  color: var(--gray-500);
-  font-weight: 500;
-  margin-right: 4px;
+.history-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--gray-900);
+  padding-bottom: 6px;
+  margin-bottom: 2px;
 }
 
+.history-item-time {
+  font-size: 11px;
+  color: var(--gray-600);
+  font-family: var(--font-mono);
+}
+
+.history-item-langs {
+  font-size: 10px;
+  color: var(--accent-blue);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.history-item-source, 
 .history-item-translation {
   word-break: break-word;
+}
+
+.history-item strong {
+  color: var(--gray-500);
+  font-weight: 600;
+  margin-right: 4px;
 }
 
 .history-empty-placeholder {
