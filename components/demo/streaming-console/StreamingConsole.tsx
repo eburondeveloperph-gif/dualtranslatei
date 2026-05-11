@@ -56,13 +56,13 @@ export default function StreamingConsole() {
           functionDeclarations: [
             {
               name: 'setGuestLanguage',
-              description: 'Set the guest language. Call this tool when the user tells you what language they speak or want to translate to.',
+              description: 'Update the "LATEST PAIRED LANGUAGE" (the non-Dutch/Flemish language). Call this tool whenever you detect a new language from the OTHER group, or when the user explicitly mentions a language they want to use.',
               parameters: {
                 type: Type.OBJECT,
                 properties: {
                   language: {
                     type: Type.STRING,
-                    description: 'The name of the language the guest speaks.',
+                    description: 'The name of the language (e.g. English, Tagalog, Spanish, French).',
                   },
                 },
                 required: ['language'],
@@ -157,7 +157,7 @@ export default function StreamingConsole() {
             return {
               id: fc.id,
               name: fc.name,
-              response: { result: `Guest language successfully set to ${args.language}. From now on, the GUEST LANGUAGE is ${args.language}. You must translate between the STAFF LANGUAGE and ${args.language} vice versa.` }
+              response: { result: `The LATEST PAIRED LANGUAGE successfully set to ${args.language}. All Dutch/Flemish speech will now be translated to ${args.language}, and all ${args.language} speech will be translated to Dutch/Flemish.` }
             };
           }
           return {
