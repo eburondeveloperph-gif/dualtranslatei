@@ -39,6 +39,7 @@ export default function Sidebar() {
     doc.setFontSize(11);
     doc.setTextColor(100);
     doc.text(`Exported on: ${new Date().toLocaleString()}`, 14, 30);
+    doc.text('Powered by Eburon AI', 14, 36);
     
     const tableData = history.map(item => [
       item.sourceText,
@@ -196,6 +197,9 @@ export default function Sidebar() {
               </p>
             )}
           </div>
+        </div>
+        <div className="sidebar-footer">
+          <span className="powered-by">Powered by Eburon AI</span>
         </div>
       </div>
     </aside>

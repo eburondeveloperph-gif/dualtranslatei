@@ -1376,3 +1376,19 @@ form button:first-of-type {
   text-align: center;
   padding: 20px 0;
 }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 20px;
+  border-top: 1px solid var(--gray-800);
+  display: flex;
+  justify-content: center;
+}
+
+.powered-by {
+  font-size: 14px;
+  color: var(--gray-500);
+  opacity: 0.8;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
