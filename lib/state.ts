@@ -5,6 +5,7 @@
 */
 import { create } from 'zustand';
 import { DEFAULT_LIVE_API_MODEL, DEFAULT_VOICE, AVAILABLE_LANGUAGES } from './constants';
+import { MEDICAL_TERMS } from './constants/medical-terms';
 import {
   FunctionDeclaration,
   FunctionResponse,
@@ -12,9 +13,36 @@ import {
   LiveServerToolCall,
 } from '@google/genai';
 
-const generateSystemPrompt = (lang1: string, lang2: string, topic: string, autoDetect: boolean) => {
+const generateSystemPrompt = (lang1: string, lang2: string, topic: string, autoDetect: boolean, medicalMode: boolean) => {
   const topicInstruction = topic ? `The conversation is about: ${topic}. Please use appropriate terminology and context.` : '';
-  const guestLanguageDescription = autoDetect ? 'Auto-detected' : lang2;
+  const guestLanguageDescription = autoDetect ? 'Auto-detected (any language)' : lang2;
+  
+  let autoDetectInstruction = '';
+  if (autoDetect) {
+    autoDetectInstruction = `
+AUTO-DETECTION PROTOCOL:
+- Person 2 (Guest) can speak in ANY language.
+- You must accurately identify the language being spoken by Person 2.
+- Do NOT guess. If unsure, wait for more context or translate as accurately as possible based on phonetic similarity.
+- Be especially sensitive to switches between the primary language (${lang1}) and other foreign languages.
+`;
+  }
+  
+  let medicalInstruction = '';
+  if (medicalMode) {
+    const lang1Terms = MEDICAL_TERMS[lang1 as keyof typeof MEDICAL_TERMS] || [];
+    const lang2Terms = MEDICAL_TERMS[lang2 as keyof typeof MEDICAL_TERMS] || [];
+    
+    medicalInstruction = `
+URGENT - MEDICAL MODE ENABLED:
+This is a medical translation. Accuracy is critical for patient safety.
+Use the following medical terminology where appropriate:
+${lang1}: ${lang1Terms.join(', ')}
+${lang2}: ${lang2Terms.join(', ')}
+
+Ensure that anatomical terms, medications, and procedures are translated with clinical precision.
+`;
+  }
   
   return `STRICT MODE:
 You are a PURE REALTIME TRANSLATOR.
@@ -48,6 +76,8 @@ ROUTING LOGIC
 - IF Input is from PERSON 1: Translate to GUEST LANGUAGE.
 - IF Input is from PERSON 2: Translate to ${lang1}.
 
+${autoDetectInstruction}
+${medicalInstruction}
 ${topicInstruction}
 `;
 };
@@ -63,6 +93,7 @@ export const useSettings = create<{
   language1: string;
   language2: string;
   topic: string;
+  medicalMode: boolean;
   autoDetect: boolean;
   customLanguages: { name: string; value: string }[];
   setSystemPrompt: (prompt: string) => void;
@@ -71,15 +102,17 @@ export const useSettings = create<{
   setLanguage1: (language: string) => void;
   setLanguage2: (language: string) => void;
   setTopic: (topic: string) => void;
+  setMedicalMode: (enabled: boolean) => void;
   setAutoDetect: (autoDetect: boolean) => void;
   addCustomLanguage: (lang: string) => void;
 }>((set, get) => ({
-  systemPrompt: generateSystemPrompt('Dutch (Flemish)', 'English (US)', '', true),
+  systemPrompt: generateSystemPrompt('Dutch (Flemish)', 'English (US)', '', true, true),
   model: DEFAULT_LIVE_API_MODEL,
   voice: 'Orus',
   language1: 'Dutch (Flemish)',
   language2: 'English (US)',
   topic: '',
+  medicalMode: true,
   autoDetect: true,
   customLanguages: [],
   setSystemPrompt: prompt => set({ systemPrompt: prompt }),
@@ -89,23 +122,27 @@ export const useSettings = create<{
     get().addCustomLanguage(language);
     set({
       language1: language,
-      systemPrompt: generateSystemPrompt(language, get().language2, get().topic, get().autoDetect)
+      systemPrompt: generateSystemPrompt(language, get().language2, get().topic, get().autoDetect, get().medicalMode)
     });
   },
   setLanguage2: language => {
     get().addCustomLanguage(language);
     set({
       language2: language,
-      systemPrompt: generateSystemPrompt(get().language1, language, get().topic, get().autoDetect)
+      systemPrompt: generateSystemPrompt(get().language1, language, get().topic, get().autoDetect, get().medicalMode)
     });
   },
   setTopic: topic => set({
     topic: topic,
-    systemPrompt: generateSystemPrompt(get().language1, get().language2, topic, get().autoDetect)
+    systemPrompt: generateSystemPrompt(get().language1, get().language2, topic, get().autoDetect, get().medicalMode)
+  }),
+  setMedicalMode: enabled => set({
+    medicalMode: enabled,
+    systemPrompt: generateSystemPrompt(get().language1, get().language2, get().topic, get().autoDetect, enabled)
   }),
   setAutoDetect: autoDetect => set({
     autoDetect: autoDetect,
-    systemPrompt: generateSystemPrompt(get().language1, get().language2, get().topic, autoDetect)
+    systemPrompt: generateSystemPrompt(get().language1, get().language2, get().topic, autoDetect, get().medicalMode)
   }),
   addCustomLanguage: (lang: string) => {
     if (!lang || lang === 'auto') return;

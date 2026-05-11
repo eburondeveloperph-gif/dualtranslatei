@@ -39,6 +39,7 @@ function ControlTray({ children }: ControlTrayProps) {
   const [micVolume, setMicVolume] = useState(0);
   const isSpeaking = useVAD(audioRecorder);
   const connectButtonRef = useRef<HTMLButtonElement>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
   const { session, user } = useAuth();
 
   const {
@@ -50,6 +51,12 @@ function ControlTray({ children }: ControlTrayProps) {
     toggleTtsMute,
     isAiSpeaking,
   } = useLiveAPIContext();
+
+  useEffect(() => {
+    if (connected) {
+      setIsConnecting(false);
+    }
+  }, [connected]);
 
   useEffect(() => {
     if (audioRecorder.stream) {
@@ -98,21 +105,31 @@ function ControlTray({ children }: ControlTrayProps) {
     };
   }, [connected, client, muted, audioRecorder]);
 
-  const handleMicClick = () => {
+  const handleMicClick = async () => {
     if (!session) return;
     if (connected) {
       setMuted(!muted);
     } else {
-      connect();
+      setIsConnecting(true);
+      try {
+        await connect();
+      } catch (e) {
+        setIsConnecting(false);
+      }
     }
   };
 
-  const connectButtonAction = () => {
+  const connectButtonAction = async () => {
     if (!session) return;
     if (connected) {
       disconnect();
     } else {
-      connect();
+      setIsConnecting(true);
+      try {
+        await connect();
+      } catch (e) {
+        setIsConnecting(false);
+      }
     }
   };
 
@@ -186,11 +203,11 @@ function ControlTray({ children }: ControlTrayProps) {
               disabled={!session}
             >
               <span className="material-symbols-outlined filled">
-                {connected ? 'pause' : 'play_arrow'}
+                {connected ? 'pause' : (isConnecting ? 'sync' : 'play_arrow')}
               </span>
             </button>
           </div>
-          <span className="text-indicator">Streaming</span>
+          <span className="text-indicator">{isConnecting ? 'Connecting...' : 'Streaming'}</span>
         </div>
       </div>
     </section>

@@ -8,12 +8,14 @@ import { useLiveAPIContext } from '../contexts/LiveAPIContext';
 import { useAuth } from '../lib/auth';
 import { useHistoryStore } from '../lib/history';
 import { AVAILABLE_LANGUAGES, AVAILABLE_VOICES } from '../lib/constants';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function Sidebar() {
   const { isSidebarOpen, toggleSidebar } = useUI();
   const {
-    systemPrompt, voice, language1, language2, topic, autoDetect, customLanguages,
-    setSystemPrompt, setVoice, setLanguage1, setLanguage2, setTopic, setAutoDetect
+    systemPrompt, voice, language1, language2, topic, autoDetect, customLanguages, medicalMode,
+    setSystemPrompt, setVoice, setLanguage1, setLanguage2, setTopic, setAutoDetect, setMedicalMode
   } = useSettings();
   const { connected } = useLiveAPIContext();
   const { isSuperAdmin } = useAuth();
@@ -21,6 +23,42 @@ export default function Sidebar() {
 
   const handleSave = () => {
     toggleSidebar();
+  };
+
+  const handleExport = () => {
+    if (history.length === 0) {
+      alert("No history to export.");
+      return;
+    }
+
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text('Dual Translator Chat History', 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Exported on: ${new Date().toLocaleString()}`, 14, 30);
+    
+    const tableData = history.map(item => [
+      item.sourceText,
+      item.translatedText
+    ]);
+
+    autoTable(doc, {
+      startY: 40,
+      head: [['Source Text', 'Translated Text']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [68, 141, 255] }, // Match --accent-blue-headers roughly
+      styles: { fontSize: 10, cellPadding: 5 },
+      columnStyles: {
+        0: { cellWidth: 90 },
+        1: { cellWidth: 90 }
+      }
+    });
+
+    doc.save('dual_translator_history.pdf');
   };
 
   return (
@@ -34,18 +72,6 @@ export default function Sidebar() {
       <div className="sidebar-content">
         <div className="sidebar-section">
           <fieldset disabled={connected}>
-            {isSuperAdmin && (
-              <label>
-                System Prompt
-                <textarea
-                  value={systemPrompt}
-                  onChange={e => setSystemPrompt(e.target.value)}
-                  rows={10}
-                  placeholder="Describe the role and personality of the AI..."
-                />
-              </label>
-            )}
-            
             <label>
               Staff Language (Language 1)
               <select
@@ -99,15 +125,27 @@ export default function Sidebar() {
               </select>
             </label>
 
-            <label>
-              Topic (Optional)
-              <textarea
-                value={topic}
-                onChange={e => setTopic(e.target.value)}
-                rows={4}
-                placeholder="e.g., Discussing quarterly financial results, focusing on revenue growth and market expansion."
-              />
-            </label>
+            <div className="flex flex-col gap-2 mt-4">
+              <label className="sidebar-section-title">Translation Mode</label>
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  name="mode"
+                  checked={medicalMode}
+                  onChange={() => setMedicalMode(true)}
+                />
+                Medical Terms
+              </label>
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  name="mode"
+                  checked={!medicalMode}
+                  onChange={() => setMedicalMode(false)}
+                />
+                General
+              </label>
+            </div>
           </fieldset>
           <button
             onClick={handleSave}
@@ -120,14 +158,25 @@ export default function Sidebar() {
         <div className="sidebar-section history-section">
           <div className="sidebar-section-title-wrapper">
             <h4 className="sidebar-section-title">Translation History</h4>
-            <button
-              onClick={clearHistory}
-              className="clear-history-button"
-              disabled={history.length === 0}
-              aria-label="Clear translation history"
-            >
-              <span className="icon">delete_sweep</span> Clear
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleExport}
+                className="export-history-button"
+                disabled={history.length === 0}
+                aria-label="Export history"
+                title="Export history"
+              >
+                <span className="icon">download</span> Export
+              </button>
+              <button
+                onClick={clearHistory}
+                className="clear-history-button"
+                disabled={history.length === 0}
+                aria-label="Clear translation history"
+              >
+                <span className="icon">delete_sweep</span> Clear
+              </button>
+            </div>
           </div>
           <div className="history-list">
             {history.length > 0 ? (

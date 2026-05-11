@@ -34,9 +34,9 @@ export default function ErrorScreen() {
   let errorMessage = 'Something went wrong. Please try again.';
   let rawMessage: string | null = error?.message || null;
   let tryAgainOption = true;
-  if (error?.message?.includes('RESOURCE_EXHAUSTED')) {
+  if (error?.message?.includes('RESOURCE_EXHAUSTED') || error?.message?.toLowerCase().includes('quota')) {
     errorMessage = quotaErrorMessage;
-    rawMessage = null;
+    rawMessage = error?.message?.toLowerCase().includes('quota') ? error.message : null;
     tryAgainOption = false;
   }
 

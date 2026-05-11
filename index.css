@@ -1317,7 +1317,8 @@ form button:first-of-type {
   margin-bottom: 16px;
 }
 
-.clear-history-button {
+.clear-history-button,
+.export-history-button {
   font-size: 13px;
   color: var(--gray-300);
   font-weight: 500;
@@ -1326,11 +1327,13 @@ form button:first-of-type {
   transition: background-color 0.2s;
 }
 
-.clear-history-button .icon {
+.clear-history-button .icon,
+.export-history-button .icon {
   font-size: 16px;
 }
 
-.clear-history-button:hover:not(:disabled) {
+.clear-history-button:hover:not(:disabled),
+.export-history-button:hover:not(:disabled) {
   background-color: var(--gray-800);
   color: var(--text);
 }
